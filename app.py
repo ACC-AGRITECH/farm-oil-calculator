@@ -52,7 +52,7 @@ def render_header():
 
 render_header()
 
-# 메인 타이틀 36px 적용
+# ★ 46px -> 36px로 수정된 부분
 st.markdown("<div style='font-size: 36px; font-weight: bold; margin-bottom: 15px;'>농업용 면세유 현재 가격 및 농가 임계소득 계산기</div>", unsafe_allow_html=True)
 st.divider()
 
@@ -123,39 +123,15 @@ if df_full_data is not None and not df_full_data.empty:
     fig_this_year = px.line(df_trend_this_year, x='날짜', 
                      y=[c for c in ['일반 휘발유', '일반 경유', '일반 등유', '농업용 면세 휘발유', '농업용 면세 경유', '농업용 면세 등유'] if c in df_trend_this_year.columns], 
                      title="가. 최근 3개월 유종별 가격변동 추이")
-    # ★ 범례(Legend) 상단 이동 적용
-    fig_this_year.update_layout(
-        title_font_size=18, 
-        font=dict(size=18),
-        legend=dict(
-            orientation="h",       # 가로 방향 배치
-            yanchor="bottom",      # 기준점 아래
-            y=1.02,                # 그래프 상단 위쪽으로 위치
-            xanchor="center",      # 가로 기준 중앙 정렬
-            x=0.5,
-            title_text=''          # 'variable' 등 불필요한 범례 제목 숨김
-        )
-    )
-    st.plotly_chart(fig_this_year, width="stretch", use_container_width=True)
+    fig_this_year.update_layout(title_font_size=18, font=dict(size=18))
+    st.plotly_chart(fig_this_year, width="stretch")
 
     # [나] 작년 그래프
     fig_last_year = px.line(df_trend_last_year, x='날짜', 
                      y=[c for c in ['일반 휘발유', '일반 경유', '일반 등유', '농업용 면세 휘발유', '농업용 면세 경유', '농업용 면세 등유'] if c in df_trend_last_year.columns], 
                      title="나. 전년도 동기간 유종별 가격변동 내역")
-    # ★ 범례(Legend) 상단 이동 적용
-    fig_last_year.update_layout(
-        title_font_size=18, 
-        font=dict(size=18),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="center",
-            x=0.5,
-            title_text=''
-        )
-    )
-    st.plotly_chart(fig_last_year, width="stretch", use_container_width=True)
+    fig_last_year.update_layout(title_font_size=18, font=dict(size=18))
+    st.plotly_chart(fig_last_year, width="stretch")
 
     # [다] 증감율 표
     st.markdown("<div style='font-size: 18px; font-weight: bold; margin-top: 10px; margin-bottom: 10px;'>다. 유종별 전년비 증감율(%)</div>", unsafe_allow_html=True)
