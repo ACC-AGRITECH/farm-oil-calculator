@@ -52,7 +52,7 @@ def render_header():
 
 render_header()
 
-# ★ 46px -> 36px로 수정된 부분
+# ★ 36px 적용 완료
 st.markdown("<div style='font-size: 36px; font-weight: bold; margin-bottom: 15px;'>농업용 면세유 현재 가격 및 농가 임계소득 계산기</div>", unsafe_allow_html=True)
 st.divider()
 
@@ -123,15 +123,39 @@ if df_full_data is not None and not df_full_data.empty:
     fig_this_year = px.line(df_trend_this_year, x='날짜', 
                      y=[c for c in ['일반 휘발유', '일반 경유', '일반 등유', '농업용 면세 휘발유', '농업용 면세 경유', '농업용 면세 등유'] if c in df_trend_this_year.columns], 
                      title="가. 최근 3개월 유종별 가격변동 추이")
-    fig_this_year.update_layout(title_font_size=18, font=dict(size=18))
-    st.plotly_chart(fig_this_year, width="stretch")
+    # ★ 범례(Legend) 상단 가로 배치로 그래프 넓히기 적용
+    fig_this_year.update_layout(
+        title_font_size=18, 
+        font=dict(size=18),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            title_text=""
+        )
+    )
+    st.plotly_chart(fig_this_year, use_container_width=True)
 
     # [나] 작년 그래프
     fig_last_year = px.line(df_trend_last_year, x='날짜', 
                      y=[c for c in ['일반 휘발유', '일반 경유', '일반 등유', '농업용 면세 휘발유', '농업용 면세 경유', '농업용 면세 등유'] if c in df_trend_last_year.columns], 
                      title="나. 전년도 동기간 유종별 가격변동 내역")
-    fig_last_year.update_layout(title_font_size=18, font=dict(size=18))
-    st.plotly_chart(fig_last_year, width="stretch")
+    # ★ 범례(Legend) 상단 가로 배치로 그래프 넓히기 적용
+    fig_last_year.update_layout(
+        title_font_size=18, 
+        font=dict(size=18),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            title_text=""
+        )
+    )
+    st.plotly_chart(fig_last_year, use_container_width=True)
 
     # [다] 증감율 표
     st.markdown("<div style='font-size: 18px; font-weight: bold; margin-top: 10px; margin-bottom: 10px;'>다. 유종별 전년비 증감율(%)</div>", unsafe_allow_html=True)
@@ -167,67 +191,4 @@ st.divider()
 # [기능 4] 스마트폰 맞춤형 세로형 손익 계산기
 # ==========================================
 st.markdown("<div style='font-size: 26px; font-weight: bold; margin-top: 10px; margin-bottom: 10px;'>3. 유류비 감안 손익분기점 계산기</div>", unsafe_allow_html=True)
-st.markdown("<div style='font-size: 18px; margin-bottom: 20px;'>항목을 위에서부터 차례대로 입력해 주세요.</div>", unsafe_allow_html=True)
-
-# --- 입력 항목 ---
-st.markdown("<div style='font-size: 18px; font-weight: bold; margin-bottom: 10px;'>■ 입력 항목</div>", unsafe_allow_html=True)
-
-revenue_this_month = st.number_input("가. 이번 달 매출액 (만원)", value=10000, step=1000)
-
-fuel_type = st.radio("※ 계산 기준 유종 선택", ["면세 등유", "면세 경유", "면세 휘발유"], horizontal=True)
-fuel_usage = st.number_input("나. 이번 달 유류 사용량 (리터)", value=2000, step=100)
-
-st.markdown("<div style='font-size: 18px; font-weight: bold; margin-top: 15px; margin-bottom: 5px;'>다. 현재 기준 농업용 면세유 유종별 가격 (원/리터)</div>", unsafe_allow_html=True)
-input_kero = st.number_input(" - 면세 등유 가격", value=float(price_kero_taxfree) if price_kero_taxfree > 0 else 1000.0, step=10.0)
-input_diesel = st.number_input(" - 면세 경유 가격", value=float(price_diesel_taxfree) if price_diesel_taxfree > 0 else 1100.0, step=10.0)
-input_gas = st.number_input(" - 면세 휘발유 가격", value=float(price_gas_taxfree) if price_gas_taxfree > 0 else 1000.0, step=10.0)
-
-other_expenses = st.number_input("라. 유류비 외 모든 지출액 (만원 / 이자 지출 포함)", value=4000, step=500)
-
-# --- 계산 로직 ---
-if fuel_type == "면세 등유":
-    selected_price = input_kero
-elif fuel_type == "면세 경유":
-    selected_price = input_diesel
-else:
-    selected_price = input_gas
-
-cost_fuel = (fuel_usage * selected_price) / 10000
-fuel_ratio = (cost_fuel / revenue_this_month) * 100 if revenue_this_month > 0 else 0
-profit_no_fuel = revenue_this_month - cost_fuel
-net_profit = revenue_this_month - cost_fuel - other_expenses
-max_fuel_cost = revenue_this_month - other_expenses
-
-# --- 결과 출력 ---
-st.markdown("<div style='font-size: 18px; font-weight: bold; margin-top: 25px; margin-bottom: 10px;'>■ 유류비 감안 손익분기점 계산 결과</div>", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #d1d5db;">
-    <span style="font-size: 18px !important; color: #0044cc; font-weight: bold;">■ 이번 달 유류비 예상 지출: {cost_fuel:,.1f} 만원</span>
-</div>
-<div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #d1d5db;">
-    <span style="font-size: 18px !important; color: #0044cc; font-weight: bold;">■ 이번 달 매출액 대비 유류비 비중: {fuel_ratio:,.1f} %</span>
-</div>
-<div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #d1d5db;">
-    <span style="font-size: 18px !important; color: #0044cc; font-weight: bold;">■ 이번 달 유류비 제외한 수익 (매출액-유류비): {profit_no_fuel:,.1f} 만원</span>
-</div>
-<div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #d1d5db;">
-    <span style="font-size: 18px !important; color: #0044cc; font-weight: bold;">■ 이번 달 모든 지출 제외한 순수익 (매출액-유류비-기타 모든 지출액): {net_profit:,.1f} 만원</span>
-</div>
-<div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #d1d5db;">
-    <span style="font-size: 18px !important; color: #0044cc; font-weight: bold;">■ 임계소득 유류비 계산 결과 (기타 모든 지출액 고정 시 유류비 상한값): {max_fuel_cost:,.1f} 만원</span>
-</div>
-""", unsafe_allow_html=True)
-
-if net_profit >= 600:
-    st.markdown(f"""
-    <div style="background-color: #0066cc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #004085;">
-        <span style="font-size: 18px !important; color: white; font-weight: bold;">■ 안정: 이번 달 순수익({net_profit:,.1f}만원)이 600만원 이상으로 안정적인 수익 구간입니다.</span>
-    </div>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown(f"""
-    <div style="background-color: #dc3545; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c82333;">
-        <span style="font-size: 18px !important; color: white; font-weight: bold;">■ 위험 경고: 이번 달 순수익({net_profit:,.1f}만원)이 600만원 미만으로 떨어져 수익성 악화가 우려됩니다!</span>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("<div style='font-size: 18px; margin-bottom: 20px;'>항목
